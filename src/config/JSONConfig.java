@@ -11,14 +11,14 @@ import org.json.*;
 import Exceptions.ConfigNotValidException;
 import Exceptions.CustomValidationException;
 import Exceptions.InvalidTypeException;
-import config.validation.IGlobalValidate;
+import config.validation.ValidationObject;
 
 public class JSONConfig {
 
 	private JSONObject obj = null;
 	private Data data;
 	private String filePath;
-	private IGlobalValidate validationObject;
+	private ValidationObject validationObject;
 	
 	public JSONConfig() {
 		this.obj = new JSONObject();
@@ -52,7 +52,7 @@ public class JSONConfig {
 	
 	private void initalizeEmptyData() {
 		try {
-			this.data = new Data("data", "Top level data object", new ArrayList<Data>(), true);
+			this.data = new Data("data", "Top level data object", new ArrayList<Data>(), true, true, true);
 		} catch (ConfigNotValidException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,12 +90,12 @@ public class JSONConfig {
 		this.data = new Data( this.obj.getJSONObject("Data"));
 	}
 	
-	public void addValidation(IGlobalValidate validationObject) {
+	public void addValidation(ValidationObject validationObject) {
 		this.validationObject = validationObject;
 	}
 	
 	public boolean validate() {
-		return this.validationObject == null || validationObject.validate(this.data);
+		return this.validationObject == null || validationObject.valid(this.data);
 	}
 	
 	public Data getTopLevelData() {

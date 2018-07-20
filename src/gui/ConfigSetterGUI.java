@@ -56,24 +56,24 @@ public class ConfigSetterGUI extends JPanel {
 		switch (data.getType()) {
 		
 			case BOOLEAN:
-				temp = new BooleanSetter(data, getFont());
+				temp = new BooleanSetter(data, getFont(), this.data, this);
 				setters.add(temp);
 				scrollPanel.add((Component)temp, cb);
 				break;
 			case INTEGER:
 			case DOUBLE:
 			case STRING:
-				temp = new Setter(data, getFont());
+				temp = new Setter(data, getFont(), this.data, this);
 				setters.add(temp);
 				scrollPanel.add((Component)temp, cb);
 				break;
 			case LIST:
-				temp = new ArraySetter(data, getFont(), this.parent, this.config);
+				temp = new ObjectSetter(data, getFont(), this.parent, this.config, this.data, this);
 				setters.add(temp);
 				scrollPanel.add((Component)temp, cb);
 				break;
 			case OBJECT:
-				temp = new ObjectSetter(data, getFont(), this.parent, this.config);
+				temp = new ObjectSetter(data, getFont(), this.parent, this.config, this.data, this);
 				setters.add(temp);
 				scrollPanel.add((Component) temp, cb);
 				break;
@@ -95,6 +95,10 @@ public class ConfigSetterGUI extends JPanel {
 		addPnl.add(add,cb);
 		scrollPanel.add(addPnl,cb);
 		cb.gridy+=1;
+		
+		if (!this.data.getExtendable()) {
+			add.setEnabled(false);
+		}
 
 		if (!commitInsteadOfSave) {
 			cancel = new JButton("Cancel");

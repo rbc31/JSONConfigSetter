@@ -3,11 +3,14 @@ package gui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -45,6 +48,8 @@ public class Setter extends JPanel implements ISetter {
 	private Font font;
 	private Font descriptionFont;
 	
+	private JButton delete;
+	
 	private String InsertNewLines(String text, Font font, int size) {
 		AffineTransform affinetransform = new AffineTransform();     
 		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
@@ -75,23 +80,34 @@ public class Setter extends JPanel implements ISetter {
 	
 	
 	private Data data;
+	private Data parentData;
 	
-	public Setter(Data data, Font font) {
+	private ConfigSetterGUI parentPanel;
+	
+	private JPanel valuePanel;
+	private JPanel descriptionPanel;
+	private JPanel deletePanel;
+	
+	public Setter(Data data, Font font, Data parentData, ConfigSetterGUI parentPanel) {
 		super();
 		this.setBorder(BorderFactory.createTitledBorder(data.getName()));
 		this.data  = data;
 		this.valid = true;
 		this.font = font;
 		this.descriptionFont = new Font(font.getName(), Font.ITALIC, font.getSize());
-
+		this.parentData = parentData;
+		this.parentPanel = parentPanel;
+		
 		constructPanel();
 	}
 	
 	private void constructPanel() {
-		this.setLayout(new GridLayout(2,2));
+		this.setLayout(new GridLayout(3,1));
+		
+		valuePanel = new JPanel(new GridLayout(1,2));
 		
 		name = new JLabel("Value: ");
-		this.add(name);
+		valuePanel.add(name);
 		
 		if (data.getType() == ETYPE.INTEGER) {
 			value = new JTextField((String.valueOf((Integer) data.getData())));
@@ -104,17 +120,34 @@ public class Setter extends JPanel implements ISetter {
 		}
 		
 		value.setHorizontalAlignment(JTextField.RIGHT);
-		this.add(value);
+		valuePanel.add(value);
 		value.getDocument().addDocumentListener(new DocumentListner(this,this.data));
+		this.add(valuePanel);
+		
+		descriptionPanel = new JPanel(new GridLayout(1,2));
 		
 		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
-		this.add(description);
+		descriptionPanel.add(description);
 		
 		error = new JLabel();
-		this.add(error);
+		descriptionPanel.add(error);
+		this.add(descriptionPanel);
+		
 		setValid(this.valid);
 		error.setHorizontalAlignment(SwingConstants.RIGHT);
+		
+		deletePanel = new JPanel();
+		
+		delete = new JButton("Delete");
+		delete.setActionCommand("DELETE");
+		delete.addActionListener(new MyActionListener(this.parentPanel, this.parentData, this.data));
+		deletePanel.add(delete);
+		this.add(deletePanel);
+		
+		if (!this.data.getDeletable()) {
+			delete.setEnabled(false);
+		}
 	}
 	
 	private void setValid(boolean valid) {
@@ -178,6 +211,33 @@ public class Setter extends JPanel implements ISetter {
 		@Override
 		public void removeUpdate(DocumentEvent arg0) {
 			parent.setValid(validate(arg0));
+		}
+		
+	}
+
+	private class MyActionListener implements ActionListener {
+
+		private ConfigSetterGUI panel;
+		private Data parentData;
+		private Data data;
+		
+		public MyActionListener(ConfigSetterGUI panel, Data parentData, Data data) {
+			this.panel = panel;
+			this.parentData = parentData;
+			this.data = data;
+		}
+		
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			switch (arg0.getActionCommand()) {
+			
+			case "DELETE":
+					//TODO add check if you are sure???
+					parentData.removeSubData(data.getName());
+					panel.reload();
+					break;
+			}
 		}
 		
 	}

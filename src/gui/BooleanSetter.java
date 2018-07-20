@@ -3,11 +3,14 @@ package gui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -49,6 +52,11 @@ public class BooleanSetter extends JPanel implements ISetter {
 	private Font font;
 	private Font descriptionFont;
 	
+	
+	private JPanel valuePanel;
+	private JPanel descriptionPanel;
+	private JPanel deletePanel;
+	
 	private String InsertNewLines(String text, Font font, int size) {
 		AffineTransform affinetransform = new AffineTransform();     
 		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
@@ -77,22 +85,30 @@ public class BooleanSetter extends JPanel implements ISetter {
 		return toReturn;
 	}
 	
-	public BooleanSetter(Data data, Font font) {
+	private Data parentData;
+	private ConfigSetterGUI parentPanel;
+	
+	public BooleanSetter(Data data, Font font, Data parentData, ConfigSetterGUI parentPanel) {
 		super();
 		this.setBorder(BorderFactory.createTitledBorder(data.getName()));
 		this.data  = data;
 		this.valid = true;
 		this.font = font;
 		this.descriptionFont = new Font(font.getName(), Font.ITALIC, font.getSize());
-
+		this.parentData = parentData;
+		this.parentPanel = parentPanel;
+		
+		
 		constructPanel();
 	}
 	
 	private void constructPanel() {
-		this.setLayout(new GridLayout(2,2));
+		this.setLayout(new GridLayout(3,1));
+		
+		valuePanel = new JPanel(new GridLayout(1,2));
 		
 		name = new JLabel("Value: ");
-		this.add(name);
+		valuePanel.add(name);
 		
 		if (data.getType() == ETYPE.BOOLEAN) {
 			value = new JCheckBox();
@@ -102,17 +118,29 @@ public class BooleanSetter extends JPanel implements ISetter {
 		}
 		
 		value.setHorizontalAlignment(JTextField.RIGHT);
-		this.add(value);
+		valuePanel.add(value);
 		value.addChangeListener(new MyChangeListener(this,this.data));
 		
+		this.add(valuePanel);
+		
+		
+		descriptionPanel = new JPanel(new GridLayout(1,2));
 		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
-		this.add(description);
+		descriptionPanel.add(description);
 		
 		error = new JLabel();
-		this.add(error);
+		descriptionPanel.add(error);
 		setValid(this.valid);
 		error.setHorizontalAlignment(SwingConstants.RIGHT);
+		this.add(descriptionPanel);
+		
+		this.deletePanel = new JPanel();
+		JButton delete = new JButton("Delete");
+		delete.addActionListener(new MyActionListener(this.parentData, this.parentPanel));
+		delete.setActionCommand("DELETE");
+		this.deletePanel.add(delete);
+		this.add(deletePanel);
 	}
 	
 	private void setValid(boolean valid) {
@@ -150,6 +178,30 @@ public class BooleanSetter extends JPanel implements ISetter {
 		@Override
 		public void stateChanged(ChangeEvent arg0) {
 			parent.setValid(validate(arg0));
+		}
+		
+	}
+
+	private class MyActionListener implements ActionListener {
+
+		private Data parentData;
+		private ConfigSetterGUI panel;
+		
+		public MyActionListener(Data parentData, ConfigSetterGUI panel) {
+			this.parentData = parentData;
+			this.panel = panel;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			switch (arg0.getActionCommand()) {
+			
+			case "DELETE":
+					//TODO add check if you are sure???
+					parentData.removeSubData(data.getName());
+					panel.reload();
+					break;
+			}
 		}
 		
 	}

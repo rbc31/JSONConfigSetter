@@ -24,7 +24,7 @@ public class DATA_TESTS {
 	@Test
 	public void data_initialisation_test_1() throws ConfigNotValidException, CustomValidationException {
 		
-		Data d = new Data("name","description",new Integer(4),true);
+		Data d = new Data("name","description",new Integer(4),true, true, true);
 		
 		assertEquals(d.getDescription(),"description");
 		assertEquals(d.getName(),"name");
@@ -42,7 +42,7 @@ public class DATA_TESTS {
 	@Test
 	public void data_initialisation_test_2() throws ConfigNotValidException, CustomValidationException {
 		
-		Data d = new Data("name 2","description 2","A string");
+		Data d = new Data("name 2","description 2","A string", false, true, true);
 		
 		assertEquals(d.getDescription(),"description 2");
 		assertEquals(d.getName(),"name 2");
@@ -58,7 +58,7 @@ public class DATA_TESTS {
 	 */
 	@Test
 	public void data_initialisation_test_3() throws ConfigNotValidException, JSONException, InvalidTypeException, CustomValidationException {
-		Data d = new Data("name 3","description 3",new Boolean(true));
+		Data d = new Data("name 3","description 3",new Boolean(true), false, true, true);
 		
 		assertEquals(d.getDescription(),"description 3");
 		assertEquals(d.getName(),"name 3");
@@ -88,11 +88,11 @@ public class DATA_TESTS {
 		
 		ArrayList<Data> list = new ArrayList<Data>();
 		for (int i=0;i<10;i++) {
-			list.add(new Data("INTEGER " + String.valueOf(i),"INTEGER " + String.valueOf(i),i ));
+			list.add(new Data("INTEGER " + String.valueOf(i),"INTEGER " + String.valueOf(i),i, true, true, true));
 		}
 		
 		
-		Data d = new Data("name 4","description 4",list);
+		Data d = new Data("name 4","description 4",list, false, true, true);
 		
 		assertEquals(d.getDescription(),"description 4");
 		assertEquals(d.getName(),"name 4");
@@ -125,7 +125,7 @@ public class DATA_TESTS {
 	public void data_initialisation_test_6() throws ConfigNotValidException, JSONException, InvalidTypeException, CustomValidationException {
 		
 		try {
-			new Data("subData","sub description", new StringBuilder(), true);
+			new Data("subData","sub description", new StringBuilder(), true, true, true);
 			fail("Should not be able to initalise data object using string builder");
 		}catch(ConfigNotValidException e) {
 			//pass

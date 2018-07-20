@@ -17,24 +17,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+
 import config.Data;
 import config.ETYPE;
 import config.JSONConfig;
 
 public class ObjectSetter extends JPanel implements ISetter {
 
-	
-	@Override
-	public boolean isDataValid() {
-		return this.valid;
-	} 
-	
-	
-	@Override
-	public Data getData() {
-		return this.data;
-	} 
-	
 	/**
 	 * 
 	 */
@@ -42,11 +31,13 @@ public class ObjectSetter extends JPanel implements ISetter {
 
 	private boolean valid;
 	private Data data;
+	private Data parentData;
 	
 	private JLabel name;
 	private JLabel description;
 	private JLabel error;
 	private JButton edit;
+	private JButton delete;
 	
 	private Font font;
 	private Font descriptionFont;
@@ -82,7 +73,15 @@ public class ObjectSetter extends JPanel implements ISetter {
 		return toReturn;
 	}
 	
-	public ObjectSetter(Data data, Font font, JFrame parent, JSONConfig config) {
+	private ConfigSetterGUI panel;
+	
+	private Controller controller;
+	
+	private JPanel namePanel;
+	private JPanel descriptionPanel;
+	private JPanel deletePanel;
+	
+	public ObjectSetter(Data data, Font font, JFrame parent, JSONConfig config, Data parentData, ConfigSetterGUI panel) {
 		super();
 		this.setBorder(BorderFactory.createTitledBorder(data.getName()));
 		this.data  = data;
@@ -91,34 +90,60 @@ public class ObjectSetter extends JPanel implements ISetter {
 		this.descriptionFont = new Font(font.getName(), Font.ITALIC, font.getSize());
 		this.parent = parent;
 		this.config = config;
+		this.parentData = parentData;
+		this.panel = panel;
+		this.controller = new Controller(parent,this.config, this.data,this.parentData, this.panel);
 		
 		constructPanel();
 	}
 	
 	private void constructPanel() {
-		this.setLayout(new GridLayout(2,2));
+		
+		this.setLayout(new GridLayout(3,1));
+		
+		
+		namePanel = new JPanel();
 		
 		name = new JLabel("Value: ");
-		this.add(name);
+		namePanel.add(name);
 		
-		if (data.getType() == ETYPE.OBJECT) {
+		if (data.getType() == ETYPE.LIST || data.getType() == ETYPE.OBJECT) {
 			edit = new JButton("Edit");
 			edit.setActionCommand("EDIT");
-			edit.addActionListener(new Controller(parent,this.config, this.data));
-		}else {
+			edit.addActionListener(controller);
+		} else {
 			throw new IllegalArgumentException("Unsupported type " + data.getType().toString());
 		}
 		
-		this.add(edit);
+		namePanel.add(edit);
+		this.add(namePanel);
+		
+		descriptionPanel = new JPanel();
 		
 		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
-		this.add(description);
+		descriptionPanel.add(description);
 		
 		error = new JLabel();
-		this.add(error);
+		descriptionPanel.add(error);
 		setValid(this.valid);
+		
+		this.add(descriptionPanel);
+		
 		error.setHorizontalAlignment(SwingConstants.RIGHT);
+		
+		deletePanel = new JPanel();
+		
+		delete = new JButton("Delete");
+		delete.setActionCommand("DELETE");
+		delete.addActionListener(controller);
+		deletePanel.add(delete);
+		
+		if (!this.data.getDeletable()) {
+			delete.setEnabled(false);
+		}
+		
+		this.add(deletePanel);
 	}
 	
 	private void setValid(boolean valid) {
@@ -139,27 +164,50 @@ public class ObjectSetter extends JPanel implements ISetter {
 		private JFrame parent;
 		private JSONConfig config;
 		private Data data;
+		private Data parentData;
+		private ConfigSetterGUI panel;
 		
-		private Controller(JFrame parent, JSONConfig config, Data data) {
+		private Controller(JFrame parent, JSONConfig config, Data data, Data parentData, ConfigSetterGUI panel) {
 			this.parent = parent;
 			this.config = config;
 			this.data   = data;
+			this.panel  = panel;
+			this.parentData = parentData;
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			this.parent.setEnabled(false);
-
-			JFrame frame = new JFrame();
-
-			
-			ConfigSetterGUI c = new ConfigSetterGUI(data, frame, this.parent, this.config);
-			frame.setContentPane(c);
-			
-			frame.setLocation(new Point(this.parent.getLocation())); 
-			frame.setSize(500,650);
-			frame.setVisible(true);
-			frame.addWindowListener(new EnableParentOnClose(this.parent));
+			switch (arg0.getActionCommand()) {
+					
+			case "DELETE":
+				parentData.removeSubData(data.getName());
+				this.panel.reload();
+				break;
+			case "EDIT":
+				this.parent.setEnabled(false);
+	
+				JFrame frame = new JFrame();
+				
+				ConfigSetterGUI c = new ConfigSetterGUI(this.data, frame, this.parent, this.config);
+				frame.setContentPane(c);
+				
+				frame.setLocation(new Point(this.parent.getLocation())); 
+				frame.setSize(550,650);
+				frame.setVisible(true);
+				frame.addWindowListener(new EnableParentOnClose(this.parent));
+				break;
+			}
 		}
 	}
+	
+
+	@Override
+	public boolean isDataValid() {
+		return this.valid;
+	}
+
+	@Override
+	public Data getData() {
+		return this.data;
+	} 
 }

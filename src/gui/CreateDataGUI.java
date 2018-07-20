@@ -142,7 +142,7 @@ public class CreateDataGUI extends JPanel {
 		}
 		
 	
-		return new Data(this.name_txt.getText(),this.description_ta.getText(), value, true);
+		return new Data(this.name_txt.getText(),this.description_ta.getText(), value, true, true, true);
 
 	}
 	

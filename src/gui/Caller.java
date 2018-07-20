@@ -53,7 +53,7 @@ public class Caller extends JPanel{
 				frame.setContentPane(c);
 				frame.setVisible(true);
 				
-				frame.setSize(500,650);
+				frame.setSize(550,650);
 			} catch (JSONException | IOException | InvalidTypeException | ConfigNotValidException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -70,7 +70,7 @@ public class Caller extends JPanel{
 		frame.setContentPane(new Caller(frame));
 		frame.setVisible(true);
 		frame.pack();
-		frame.setSize(500,650);
+		frame.setSize(550,650);
 	}
 
 }

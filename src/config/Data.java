@@ -21,17 +21,17 @@ public class Data {
 	private String 	description;
 	private String 	name;
 	private ValidationObject validationObject;
+	private boolean extendable;
+	private boolean deleteable;
 
-	public Data(String name, String description, Object data, boolean settable) throws ConfigNotValidException, CustomValidationException {
+	public Data(String name, String description, Object data, boolean settable, boolean extendable, boolean deleteable) throws ConfigNotValidException, CustomValidationException {
 		this.name = name;
 		this.settable = settable;
 		this.description = description;
 		this.setData(data);
 		this.validationObject = null;
-	}
-	
-	public Data(String name, String description, Object data) throws ConfigNotValidException, CustomValidationException {
-		this(name, description, data, false);
+		this.extendable = extendable;
+		this.deleteable = deleteable;
 	}
 	
 	public Data(JSONObject jsonObject) throws JSONException, InvalidTypeException, ConfigNotValidException {
@@ -40,12 +40,16 @@ public class Data {
 				jsonObject.has("settable")	 		&&
 				jsonObject.has("description") 		&&
 				jsonObject.has("validationObject") 	&&
+				jsonObject.has("extendable") 		&&
+				jsonObject.has("deleteable") 		&&
 				jsonObject.has("name")) {
 			
 			this.name 			= jsonObject.getString("name");
 			this.description 	= jsonObject.getString("description");
 			this.settable 		= jsonObject.getBoolean("settable");
 			this.type 			= ETYPE.fromString(jsonObject.getString("type"));
+			this.extendable     = jsonObject.getBoolean("extendable");
+			this.deleteable     = jsonObject.getBoolean("deleteable");
 			
 			if (jsonObject.isNull("validationObject")) {
 				this.validationObject = null;
@@ -88,7 +92,7 @@ public class Data {
 				}
 
 		}else {
-			throw new ConfigNotValidException("Data object must have: type, data, settable, description, validationObject and name keys defined");
+			throw new ConfigNotValidException("Data object must have: type, data, settable, description, validationObject, extendable, deleteable and name keys defined");
 		}
 	}
 	
@@ -110,6 +114,22 @@ public class Data {
 	
 	public boolean getSettable() {
 		return this.settable;
+	}
+	
+	public boolean getDeletable() {
+		return this.deleteable;
+	}
+	
+	public boolean getExtendable() {
+		return this.extendable;
+	}
+	
+	public void setDeletable(boolean deleteable) {
+		this.deleteable = deleteable;
+	}
+	
+	public void setExtendable(boolean extendable) {
+		this.extendable = extendable;
 	}
 	
 	public void setName(String name) {
@@ -189,6 +209,8 @@ public class Data {
 		s.append(" Description = " 	+ this.description);
 		s.append(" Type = " 		+ this.type);
 		s.append(" isSettable = " 	+ this.settable);
+		s.append(" isExtendable = " 	+ this.extendable);
+		s.append(" isDeleteable = " 	+ this.deleteable);
 		s.append(" Value = " 		+ this.data.toString());
 		
 		return s.toString();
@@ -201,6 +223,8 @@ public class Data {
 		toReturn.put("settable", this.settable);
 		toReturn.put("description", this.description);
 		toReturn.put("name", this.name);
+		toReturn.put("extendable",this.extendable);
+		toReturn.put("deleteable",this.deleteable);
 		
 		if (this.validationObject == null) {
 			toReturn.put("validationObject", JSONObject.NULL);
@@ -259,6 +283,29 @@ public class Data {
 			
 		}else {
 			throw new ConfigNotValidException("Can only add sub data to list or object");
+		}
+	}
+
+	public void removeSubData(String name) {
+		// TODO Auto-generated method stub
+		if (this.type == ETYPE.OBJECT) {
+			HashMap map = (HashMap<?,?>)this.data;
+			
+			if (map.get(name) == null) {
+				throw new IllegalArgumentException("Name " + name + " is not a member of this object");
+			}else {
+				map.remove(name);
+			}
+		}else if (this.type == ETYPE.LIST) {
+			ArrayList<?> list = (ArrayList<?>) this.data;
+			
+			for (Object element: list) {
+				if (((Data) element).getName().equals(name)) {
+					list.remove(element);
+					return;
+				}
+			}
+			throw new IllegalArgumentException("Name " + name + " is not a member of this list");
 		}
 	}
 	
