@@ -1,12 +1,11 @@
 # JSONConfigSetter
 
 
-This project attempts to craete a library to allow small programs have user editable data.
+This project attempts to create a library to allow small programs have user editable data.
 
 The library works by taking a JSON file and allowing the parameters in the file to be edited in a JAVA swing interface.
 
-Currently you can create and edit values. 
+Currently you can create, edit and delete objects, arrays, ints, booleans, doubles and strings
 
 TODO:
-  -> Deleting values
   -> Test coverage
