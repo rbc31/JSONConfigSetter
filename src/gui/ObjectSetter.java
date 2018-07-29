@@ -45,34 +45,6 @@ public class ObjectSetter extends JPanel implements ISetter {
 	private JFrame parent;
 	private JSONConfig config;
 	
-	private String InsertNewLines(String text, Font font, int size) {
-		AffineTransform affinetransform = new AffineTransform();     
-		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
-
-		String toReturn = "<HTML>"; 
-		ArrayList<String> words = new ArrayList<String>();
-		for (String word : text.split(" ")) {
-			words.add(word);
-		}
-		
-		while (!words.isEmpty()) {
-			
-			String temp = "";
-			String curr = temp;
-			
-			while (font.getStringBounds(temp, frc).getWidth() <= size && !words.isEmpty()) {
-				temp += " " + words.remove(0);
-				 curr = temp;
-			}
-			
-			toReturn += curr + "<BR></BR>";
-			
-		}
-		
-		toReturn += "</HTML>";
-		return toReturn;
-	}
-	
 	private ConfigSetterGUI panel;
 	
 	private Controller controller;
@@ -120,7 +92,7 @@ public class ObjectSetter extends JPanel implements ISetter {
 		
 		descriptionPanel = new JPanel();
 		
-		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
+		description = new JLabel(ISetter.insertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
 		descriptionPanel.add(description);
 		

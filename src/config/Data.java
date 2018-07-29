@@ -24,17 +24,21 @@ public class Data {
 	private boolean extendable;
 	private boolean deleteable;
 
-	public Data(String name, String description, Object data, boolean settable, boolean extendable, boolean deleteable) throws ConfigNotValidException, CustomValidationException {
+	public Data(String name, String description, Object data, boolean settable, boolean extendable, boolean deleteable) throws ConfigNotValidException {
 		this.name = name;
 		this.settable = settable;
 		this.description = description;
-		this.setData(data);
+		try {
+			this.setData(data);
+		}catch (CustomValidationException e) {
+			/* never called */
+		}
 		this.validationObject = null;
 		this.extendable = extendable;
 		this.deleteable = deleteable;
 	}
 	
-	public Data(JSONObject jsonObject) throws JSONException, InvalidTypeException, ConfigNotValidException {
+	public Data(JSONObject jsonObject) throws JSONException, InvalidTypeException, ConfigNotValidException, CustomValidationException {
 		if (	jsonObject.has("type") 				&&
 				jsonObject.has("data") 				&&
 				jsonObject.has("settable")	 		&&
@@ -90,7 +94,9 @@ public class Data {
 						this.data 			= jsonObject.getBoolean("data");
 						break;
 				}
-
+			if (!this.valid()) {
+				throw new CustomValidationException("Data is not valid");
+			}
 		}else {
 			throw new ConfigNotValidException("Data object must have: type, data, settable, description, validationObject, extendable, deleteable and name keys defined");
 		}
@@ -124,7 +130,7 @@ public class Data {
 		return this.extendable;
 	}
 	
-	public void setDeletable(boolean deleteable) {
+	public void setDeleteable(boolean deleteable) {
 		this.deleteable = deleteable;
 	}
 	
@@ -178,7 +184,7 @@ public class Data {
 					}
 				}
 			} else {
-				throw new ConfigNotValidException("A sub object of a Data object must be another Data object!");
+				throw new ConfigNotValidException("A sub object of a Data object must be an ArrayList Data object!");
 			}
 		}
 		
@@ -309,9 +315,73 @@ public class Data {
 		}
 	}
 	
+	public Data getSubData(String key) {
+		if (this.type == ETYPE.LIST) {
+			ArrayList<?> list = ((ArrayList<?>)this.data);
+			
+			for (Object element: list) {
+				if (((Data) element).getName().equals(key)) {
+					return (Data) element;
+				}
+			}
+			throw new IllegalArgumentException("Key "+ key +" is not found in Data object");
+		}else if (this.type == ETYPE.OBJECT) {
+			Data toReturn = (Data) ((HashMap<?,?>)this.data).get(key);
+			if (toReturn == null) {
+				throw new IllegalArgumentException("Key "+ key +" is not found in Data object");
+			}else {
+				return toReturn;
+			}
+		}
+		throw new IllegalArgumentException("getting sub data can only work on list or object data objects");
+	}	
 	
-	
-	
-	
+	public boolean equals(Data compare) {
+		if (this.deleteable  == compare.deleteable  &&
+			this.extendable  == compare.extendable  &&
+			this.settable    == compare.settable    &&
+			this.description.equals(compare.description) &&
+			this.name.equals(compare.name)        &&
+			this.type        == compare.type		&&
+			(this.validationObject == null && compare.validationObject == null ||
+			this.validationObject.getClass().getName().equals(compare.validationObject.getClass().getName()))
+			) {
+			switch (this.type) {
+			case LIST:
+				ArrayList<?> ourList 	= (ArrayList<?>) this.data;
+				ArrayList<?> theirList 	= (ArrayList<?>) compare.data;
+				if (ourList.size() != theirList.size()) {
+					return false;
+				}
+				for (int i=0;i<ourList.size();i++) {//for each sub bit of data are they equal
+					if (!((Data)ourList.get(i)).equals((Data)theirList.get(i))) {
+						return false;
+					}
+				}
+				return true;
+			case OBJECT: 
+				HashMap<?,?> ourMap = (HashMap<?,?>) this.data;
+				HashMap<?,?> theirMap = (HashMap<?,?>) compare.data;
+				if (ourMap.size() != theirMap.size()) {
+					return false;
+				}
+				for (Object key: ourMap.keySet()) {//for each sub bit of data are they equal
+					if (!theirMap.containsKey(key) || 
+					!((Data)ourMap.get(key)).equals((Data)theirMap.get(key))) {
+						return false;
+					}
+				}
+				return true;
+			case STRING:
+			case INTEGER:
+			case DOUBLE:
+			case BOOLEAN:
+				return this.data.equals(compare.data);
+			}
+			return false;
+		}else {
+			return false;
+		}
+	}
 	
 }

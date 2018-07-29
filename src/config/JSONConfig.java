@@ -56,13 +56,10 @@ public class JSONConfig {
 		} catch (ConfigNotValidException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (CustomValidationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 	}
 	
-	public JSONConfig(String filePath) throws FileNotFoundException, JSONException, IOException, InvalidTypeException, ConfigNotValidException {
+	public JSONConfig(String filePath) throws FileNotFoundException, JSONException, IOException, InvalidTypeException, ConfigNotValidException, CustomValidationException {
 		this.filePath = filePath;
 		this.obj = new JSONObject(loadFile(filePath));
 		initalizeEmptyData();
@@ -85,7 +82,7 @@ public class JSONConfig {
 		pr.close();
 	}
 	
-	public void reload() throws JSONException, FileNotFoundException, IOException, InvalidTypeException, ConfigNotValidException {
+	public void reload() throws JSONException, FileNotFoundException, IOException, InvalidTypeException, ConfigNotValidException, CustomValidationException {
 		this.obj = new JSONObject(loadFile(this.filePath));
 		this.data = new Data( this.obj.getJSONObject("Data"));
 	}

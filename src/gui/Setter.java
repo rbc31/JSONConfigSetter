@@ -50,33 +50,6 @@ public class Setter extends JPanel implements ISetter {
 	
 	private JButton delete;
 	
-	private String InsertNewLines(String text, Font font, int size) {
-		AffineTransform affinetransform = new AffineTransform();     
-		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
-
-		String toReturn = "<HTML>"; 
-		ArrayList<String> words = new ArrayList<String>();
-		for (String word : text.split(" ")) {
-			words.add(word);
-		}
-		
-		while (!words.isEmpty()) {
-			
-			String temp = "";
-			String curr = temp;
-			
-			while (font.getStringBounds(temp, frc).getWidth() <= size && !words.isEmpty()) {
-				temp += " " + words.remove(0);
-				 curr = temp;
-			}
-			
-			toReturn += curr + "<BR></BR>";
-			
-		}
-		
-		toReturn += "</HTML>";
-		return toReturn;
-	}
 	
 	
 	private Data data;
@@ -122,11 +95,16 @@ public class Setter extends JPanel implements ISetter {
 		value.setHorizontalAlignment(JTextField.RIGHT);
 		valuePanel.add(value);
 		value.getDocument().addDocumentListener(new DocumentListner(this,this.data));
+		if (!this.data.getSettable()) {
+			value.setEnabled(false);
+			value.setToolTipText("Can not set this value");
+		}
+		
 		this.add(valuePanel);
 		
 		descriptionPanel = new JPanel(new GridLayout(1,2));
 		
-		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
+		description = new JLabel(ISetter.insertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
 		descriptionPanel.add(description);
 		

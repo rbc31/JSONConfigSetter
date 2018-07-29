@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import org.json.JSONException;
 
 import Exceptions.ConfigNotValidException;
+import Exceptions.CustomValidationException;
 import Exceptions.InvalidTypeException;
 import config.JSONConfig;
 
@@ -55,6 +56,9 @@ public class Caller extends JPanel{
 				
 				frame.setSize(550,650);
 			} catch (JSONException | IOException | InvalidTypeException | ConfigNotValidException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CustomValidationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

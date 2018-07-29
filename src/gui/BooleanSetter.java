@@ -57,34 +57,6 @@ public class BooleanSetter extends JPanel implements ISetter {
 	private JPanel descriptionPanel;
 	private JPanel deletePanel;
 	
-	private String InsertNewLines(String text, Font font, int size) {
-		AffineTransform affinetransform = new AffineTransform();     
-		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
-
-		String toReturn = "<HTML>"; 
-		ArrayList<String> words = new ArrayList<String>();
-		for (String word : text.split(" ")) {
-			words.add(word);
-		}
-		
-		while (!words.isEmpty()) {
-			
-			String temp = "";
-			String curr = temp;
-			
-			while (font.getStringBounds(temp, frc).getWidth() <= size && !words.isEmpty()) {
-				temp += " " + words.remove(0);
-				 curr = temp;
-			}
-			
-			toReturn += curr + "<BR></BR>";
-			
-		}
-		
-		toReturn += "</HTML>";
-		return toReturn;
-	}
-	
 	private Data parentData;
 	private ConfigSetterGUI parentPanel;
 	
@@ -117,6 +89,11 @@ public class BooleanSetter extends JPanel implements ISetter {
 			throw new IllegalArgumentException("Unsupported type " + data.getType().toString());
 		}
 		
+		if (!this.data.getSettable()) {
+			value.setEnabled(false);
+			value.setToolTipText("Can not set this value");
+		}
+		
 		value.setHorizontalAlignment(JTextField.RIGHT);
 		valuePanel.add(value);
 		value.addChangeListener(new MyChangeListener(this,this.data));
@@ -125,7 +102,7 @@ public class BooleanSetter extends JPanel implements ISetter {
 		
 		
 		descriptionPanel = new JPanel(new GridLayout(1,2));
-		description = new JLabel(InsertNewLines(data.getDescription(),font,200));
+		description = new JLabel(ISetter.insertNewLines(data.getDescription(),font,200));
 		description.setFont(descriptionFont);
 		descriptionPanel.add(description);
 		
@@ -141,6 +118,10 @@ public class BooleanSetter extends JPanel implements ISetter {
 		delete.setActionCommand("DELETE");
 		this.deletePanel.add(delete);
 		this.add(deletePanel);
+		
+		if (!this.data.getDeletable()) {
+			delete.setEnabled(false);
+		}
 	}
 	
 	private void setValid(boolean valid) {

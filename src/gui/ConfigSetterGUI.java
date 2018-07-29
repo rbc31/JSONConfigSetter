@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import org.json.JSONException;
 
 import Exceptions.ConfigNotValidException;
+import Exceptions.CustomValidationException;
 import Exceptions.InvalidTypeException;
 import config.Data;
 import config.ETYPE;
@@ -276,7 +277,7 @@ public class ConfigSetterGUI extends JPanel {
 			case "CANCEL":
 				try {
 					config.reload();
-				} catch (JSONException | IOException | InvalidTypeException | ConfigNotValidException e) {
+				} catch (JSONException | IOException | InvalidTypeException | ConfigNotValidException | CustomValidationException e) {
 					JOptionPane.showMessageDialog(this.parent,
 						    "Failed to reload the data blob: " + e.getMessage(),
 						    "reload error",

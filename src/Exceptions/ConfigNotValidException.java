@@ -10,4 +10,8 @@ public class ConfigNotValidException extends Exception {
 	public ConfigNotValidException(String message) {
 		super(message);
 	}
+	
+	public ConfigNotValidException(Exception e) {
+		super(e);
+	}
 }
