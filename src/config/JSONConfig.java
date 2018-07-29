@@ -36,7 +36,7 @@ public class JSONConfig {
 			br = new BufferedReader(new FileReader(filePath));
 			
 			String temp = br.readLine();
-			StringBuilder toReturn = new StringBuilder(temp.length()*2);
+			StringBuilder toReturn = new StringBuilder();
 			
 			while (temp != null) {
 				toReturn.append(temp);

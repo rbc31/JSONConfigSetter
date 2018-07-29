@@ -462,8 +462,357 @@ public class DATA_TESTS {
 		} catch (CustomValidationException e) {
 			fail("Exception not expected");
 		}
+	}
+	
+	@Test
+	public void test_setData() throws ConfigNotValidException, CustomValidationException {
+		Data d = new Data("name", "description", "a string", true, true, true);
+		
+		d.setData(true);
+		assertEquals(ETYPE.BOOLEAN, d.getType());
+		
+		d.setData("a string");
+		assertEquals(ETYPE.STRING, d.getType());
+		
+		d.setData(0);
+		assertEquals(ETYPE.INTEGER, d.getType());
+		
+		d.setData(1.1);
+		assertEquals(ETYPE.DOUBLE, d.getType());
+		
+		ArrayList<Object> data = new ArrayList<Object>();
+		
+		d.setData(data);
+		assertEquals(ETYPE.LIST, d.getType());
+		
+		ArrayList<Data> data2 = new ArrayList<Data>();
+		data2.add(new Data("sub data 1","sub data",0.1,true,true,true));
+		data2.add(new Data("sub data 2","sub data",0.1,true,true,true));
+		data2.add(new Data("sub data 3","sub data",0.1,true,true,true));
+		
+		d.setData(data2);
+		assertEquals(ETYPE.LIST, d.getType());
+		
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		d.setData(map);
+		assertEquals(ETYPE.OBJECT, d.getType());
+		
+		HashMap<String,Object> map2 = new HashMap<String,Object>();
+		map2.put("sub data 1",new Data("sub data 1","sub data",0.1,true,true,true));
+		map2.put("sub data 2",new Data("sub data 2","sub data",0.1,true,true,true));
+		d.setData(map2);
+		assertEquals(ETYPE.OBJECT, d.getType());
+
+	
+		map2.put("invalid","will fail");
 		
 		
+		try {
+			d.setData(map2);
+			fail("Exception expected");
+		}catch(ConfigNotValidException e) {
+			// pass
+		}
+		map2.remove("invalid");
+		
+		data.add("String");
+		
+		try {
+			d.setData(data);
+			fail("Exception expected");
+		}catch(ConfigNotValidException e) {
+			// pass
+		}
+		
+		d.setData(data2);
+		
+		try {
+			d.removeSubData("not real");
+			fail("Exception unexpected");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		
+		try {
+			d.removeSubData(null);
+			fail("Exception unexpected");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		d.removeSubData("sub data 3");
+		
+		d.setData(map2);
+		
+		try {
+			d.removeSubData("sub data 4");
+			fail("Exception unexpected");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+
+		d.removeSubData("sub data 2");
+		
+		
+		try {
+			d.removeSubData(null);
+			fail("Exception unexpected");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+	}
+	
+	@Test
+	public void test_add_duplicate_key() throws ConfigNotValidException, CustomValidationException {
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		Data d = new Data("map","map", map,true,true,true);
+		
+		Data i1 = new Data("sub","sub", 2, true, true, true);
+		Data i2 = new Data("sub","sub", 1, true, true, true);
+		d.addData(i1);
+		try {
+			d.addData(i2);
+			fail("Exception expected");
+		} catch (ConfigNotValidException e) {
+			//pass
+		}
+		
+		d.setData(new ArrayList<Object>());
+		d.addData(i1);
+		d.addData(i2);
+	}
+	
+	@Test
+	public void test_add_to_atmoic_type() throws ConfigNotValidException, CustomValidationException {
+	
+		Data d = new Data("test","test", 0, true, true, true);
+		
+		Data sub = new Data("sub","sub", 0, true, true, true);
+		
+		try {
+			d.addData(sub);
+			fail("Expected exception");
+		} catch(ConfigNotValidException e) {
+			//pass
+		}
+		
+		d.setData(12.12);
+		
+		try {
+			d.addData(sub);
+			fail("Expected exception");
+		} catch(ConfigNotValidException e) {
+			//pass
+		}
+		
+		d.setData(true);
+		
+		try {
+			d.addData(sub);
+			fail("Expected exception");
+		} catch(ConfigNotValidException e) {
+			//pass
+		}
+		
+		d.setData("HEllo");
+
+		
+		try {
+			d.addData(sub);
+			fail("Expected exception");
+		} catch(ConfigNotValidException e) {
+			//pass
+		}
+	}
+	
+	@Test
+	public void test_invalid_validation_obj() throws JSONException, InvalidTypeException, CustomValidationException, ConfigNotValidException {
+
+
+		JSONObject v = new JSONObject();
+		
+		
+		JSONObject j = new JSONObject();
+		j.put("type", "OBJECT");
+		j.put("data", 77);
+		j.put("settable", false);
+		j.put("description", "a description");
+		j.put("validationObject",  v);		
+		j.put("extendable", false);
+		j.put("deleteable", false);		
+		j.put("name", "a name");
+		
+		try {
+			new Data(j);
+			fail("Expected Exception");
+		} catch (ConfigNotValidException e) {
+			//pass
+		} 
+		
+		v.put("name","not real object");
+		
+		
+		try {
+			new Data(j);
+			fail("Expected Exception");
+		} catch (ConfigNotValidException e) {
+			//pass
+		} 
+		
+		v.put("name", true);
+		
+		try {
+			new Data(j);
+			fail("Expected Exception");
+		} catch (JSONException e) {
+			//pass
+		} 
+		
+	}
+	
+	@Test
+	public void test_get_sub_element() throws ConfigNotValidException, CustomValidationException {
+		
+
+		Data parent  = new Data("parent","parent", new HashMap<String,Data>(),false,false,false);
+		Data sub 	 = new Data("list 1","list 1",new ArrayList<Data>(), false, false, false);	
+		Data subsub1 = new Data("boolean 1","boolean 1", true, false, false, false);
+		Data subsub2 = new Data("boolean 2","boolean 2", true, false, false, false);
+		Data subsub3 = new Data("string 1", "string 1", "val", false, false, false);
+		Data subsub4 = new Data("string 2", "string 2", "val", false, false, false);
+		Data subsub5 = new Data("integer 1","integer 1", Integer.MIN_VALUE, false, false, false);
+		Data subsub6 = new Data("integer 2","integer 2", Integer.MAX_VALUE, false, false, false);
+		Data subsub7 = new Data("double 1", "double 1", Double.MIN_VALUE, false, false, false);
+		Data subsub8 = new Data("double 2", "double 2", Double.MAX_VALUE, false, false, false);
+		
+		subsub6.setValidationObject(new GreaterThan0());
+		
+		sub.addData(subsub1);
+		sub.addData(subsub2);
+		sub.addData(subsub3);
+		sub.addData(subsub4);
+		sub.addData(subsub5);
+		sub.addData(subsub6);
+		sub.addData(subsub7);
+		sub.addData(subsub8);
+
+		parent.addData(sub);
+		
+		
+		assertEquals(subsub5, sub.getSubData("integer 1"));
+		
+		assertEquals(sub, parent.getSubData("list 1"));
+		
+		try {
+			sub.getSubData("not real");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			sub.getSubData(null);
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			parent.getSubData(null);
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			parent.getSubData("invalid");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			subsub1.getSubData("invalid");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			subsub3.getSubData("invalid");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			subsub5.getSubData("invalid");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+		
+		try {
+			subsub7.getSubData("invalid");
+			fail("Expected exception");
+		}catch (IllegalArgumentException e) {
+			//pass
+		}
+	}
+	
+	@Test
+	public void equal() throws ConfigNotValidException, CustomValidationException {
+		Data data1 = new Data("boolean 1","boolean 1", false, false, false, false);
+		Data data2 = new Data("boolean 1","boolean 1", false, false, false, false);
+		
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setDeleteable(true);
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setDeleteable(true);
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setExtendable(true);
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setExtendable(true);
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setSettable(true);
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setSettable(true);
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setDescription("decription 2");
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setDescription("decription 2");
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setName("name 2");
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setName("name 2");
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setData(1);
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setData(1);
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setValidationObject(new GreaterThan0());
+		assertNotEquals(true ,data1.equals(data2));
+		
+		data2.setValidationObject(new GreaterThan0());
+		assertEquals(true ,data1.equals(data2));
+		
+		data1.setValidationObject(null);
+		assertNotEquals(true ,data2.equals(data1));
 	}
 }
 

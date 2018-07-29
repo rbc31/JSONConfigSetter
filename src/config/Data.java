@@ -261,7 +261,7 @@ public class Data {
 		return toReturn;
 	}
 	
-	public ValidationObject loadValidationObject(JSONObject obj) throws JSONException, ConfigNotValidException {
+	private ValidationObject loadValidationObject(JSONObject obj) throws JSONException, ConfigNotValidException {
 		if (obj.has("name")) {
 			switch (obj.getString("name")) {
 			
@@ -292,8 +292,7 @@ public class Data {
 		}
 	}
 
-	public void removeSubData(String name) {
-		// TODO Auto-generated method stub
+	public void removeSubData(String name) throws IllegalArgumentException{
 		if (this.type == ETYPE.OBJECT) {
 			HashMap map = (HashMap<?,?>)this.data;
 			
@@ -337,51 +336,7 @@ public class Data {
 	}	
 	
 	public boolean equals(Data compare) {
-		if (this.deleteable  == compare.deleteable  &&
-			this.extendable  == compare.extendable  &&
-			this.settable    == compare.settable    &&
-			this.description.equals(compare.description) &&
-			this.name.equals(compare.name)        &&
-			this.type        == compare.type		&&
-			(this.validationObject == null && compare.validationObject == null ||
-			this.validationObject.getClass().getName().equals(compare.validationObject.getClass().getName()))
-			) {
-			switch (this.type) {
-			case LIST:
-				ArrayList<?> ourList 	= (ArrayList<?>) this.data;
-				ArrayList<?> theirList 	= (ArrayList<?>) compare.data;
-				if (ourList.size() != theirList.size()) {
-					return false;
-				}
-				for (int i=0;i<ourList.size();i++) {//for each sub bit of data are they equal
-					if (!((Data)ourList.get(i)).equals((Data)theirList.get(i))) {
-						return false;
-					}
-				}
-				return true;
-			case OBJECT: 
-				HashMap<?,?> ourMap = (HashMap<?,?>) this.data;
-				HashMap<?,?> theirMap = (HashMap<?,?>) compare.data;
-				if (ourMap.size() != theirMap.size()) {
-					return false;
-				}
-				for (Object key: ourMap.keySet()) {//for each sub bit of data are they equal
-					if (!theirMap.containsKey(key) || 
-					!((Data)ourMap.get(key)).equals((Data)theirMap.get(key))) {
-						return false;
-					}
-				}
-				return true;
-			case STRING:
-			case INTEGER:
-			case DOUBLE:
-			case BOOLEAN:
-				return this.data.equals(compare.data);
-			}
-			return false;
-		}else {
-			return false;
-		}
+		return this.getJSONOBJ().toString().equals(compare.getJSONOBJ().toString());
 	}
 	
 }
