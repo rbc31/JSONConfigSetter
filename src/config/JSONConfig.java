@@ -52,10 +52,9 @@ public class JSONConfig {
 	
 	private void initalizeEmptyData() {
 		try {
-			this.data = new Data("data", "Top level data object", new ArrayList<Data>(), true, true, true);
+			this.data = new Data("Data", "Top level data object", new ArrayList<Data>(), true, true, true);
 		} catch (ConfigNotValidException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//never called
 		} 
 	}
 	
@@ -80,6 +79,7 @@ public class JSONConfig {
 		PrintWriter pr = new PrintWriter(filePath);
 		pr.write(this.obj.toString());
 		pr.close();
+		this.filePath = filePath;
 	}
 	
 	public void reload() throws JSONException, FileNotFoundException, IOException, InvalidTypeException, ConfigNotValidException, CustomValidationException {
@@ -92,7 +92,7 @@ public class JSONConfig {
 	}
 	
 	public boolean validate() {
-		return this.validationObject == null || validationObject.valid(this.data);
+		return this.validationObject == null || validationObject.valid(this.data.getData());
 	}
 	
 	public Data getTopLevelData() {

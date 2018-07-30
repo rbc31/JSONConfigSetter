@@ -7,5 +7,3 @@ The library works by taking a JSON file and allowing the parameters in the file 
 
 Currently you can create, edit and delete objects, arrays, ints, booleans, doubles and strings
 
-TODO:
-  -> Test coverage
